@@ -61,4 +61,4 @@ class Authentication():
                 user_id=created_user.id
             ) 
 
-        return True
+        return created_user

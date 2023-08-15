@@ -3,6 +3,7 @@ from .models import Employee
 
 from accounts.models import User, User_Groups, Group, Group_Permissions
 
+from django.contrib.auth.models import Permission
 
 class EmployeesSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
@@ -64,16 +65,16 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return groups
  
 class GroupsSerializer(serializers.ModelSerializer):
-    #permissions = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
         fields = (
             'id',
-            'name', 
+            'name',
+            'permissions'
         )
-
-    """
+ 
     def get_permissions(self, obj):
         groups = Group_Permissions.objects.filter(group_id=obj.id).all()
         permissions = []
@@ -85,5 +86,13 @@ class GroupsSerializer(serializers.ModelSerializer):
             "codename": group.permission.codename
         })
 
-        return permissions
-        """
+        return permissions 
+
+class PermissionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = (
+            'id',
+            'name',
+            'codename'
+        )

@@ -4,6 +4,8 @@ from .base import Base
 from rest_framework.views import Response, status
 from rest_framework.exceptions import APIException
 
+from django.http import QueryDict
+
 from ..utils.permissions import EmployeesPermission, GroupsPermission
 
 from ..models import Employee, Enterprise
@@ -13,6 +15,7 @@ from accounts.models import User, User_Groups
 
 from ..serializers import EmployeesSerializer, EmployeeSerializer
 
+import json
 
 class Employees(Base):
     permission_classes = [EmployeesPermission]
@@ -32,10 +35,12 @@ class Employees(Base):
         return Response({"employees": serializer.data})
 
     def post(self, request):
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        body = json.loads(request.body)
 
+        name = body.get('name')
+        email = body.get('email')
+        password = body.get('password') 
+      
         enterprise_id = self.get_enterprise_id(request.user.id)
         signup_user = Authentication.signup(
             self,
@@ -45,8 +50,8 @@ class Employees(Base):
             type_account='employee',
             company_id=enterprise_id
         )
-
-        if signup_user == True:
+ 
+        if isinstance(signup_user, User):
             return Response({"success": True}, status=status.HTTP_201_CREATED)
         else:
             return Response(signup_user, status=status.HTTP_400_BAD_REQUEST)
@@ -61,6 +66,38 @@ class EmployeeDetail(Base):
         serializer = EmployeeSerializer(employee)
 
         return Response(serializer.data)
+    
+    def put(self, request, employee_id):   
+        body = json.loads(request.body)
+
+        groups =  body.get('groups')
+
+        employee  = self.get_employee(employee_id, request.user.id) 
+
+        name =  body.get('name') or employee.user.name
+        email = body.get('email') or employee.user.email
+     
+        if email != employee.user.email and User.objects.filter(email=email).exists():
+            raise APIException("Esse email já está em uso", code="email_already_use")
+
+        User.objects.filter(id=employee.user.id).update(
+            name=name,
+            email=email
+        )
+
+        if groups:
+            groups = groups.split(',')
+          
+            User_Groups.objects.filter(user_id=employee_id).delete()
+
+            for group_id in groups:
+                self.get_group(group_id, employee.enterprise.id)
+                User_Groups.objects.create(
+                    group_id=group_id,
+                    user_id=employee_id
+                )
+
+        return Response({"copo": True})
 
     def delete(self, request, employee_id):
         # Check employee_id

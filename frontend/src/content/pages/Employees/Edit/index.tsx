@@ -2,22 +2,22 @@ import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react'
 import PageTitle from 'src/components/PageTitle';
 import PageTitleWrapper from 'src/components/PageTitleWrapper';
-import { Button, Container, Grid, LinearProgress, TextField, Autocomplete } from '@mui/material';
+import { Button, Container, Grid, LinearProgress, TextField, Autocomplete, Snackbar } from '@mui/material';
 import { api } from 'src/utils/api';
 import { useAuth } from 'src/utils/auth';
 import type { ApiGetOneEmployee, Employee } from 'src/models/Employee';
-import { useNavigate, useParams } from 'react-router';
+import { Router, useNavigate, useParams, useRoutes } from 'react-router';
 import Chip from '@mui/material/Chip';
 import type { Groups, ApiGetGroupsCompanie } from 'src/models/Group';
 
-const EmployeesPage = () => {
+const EmployeeEdit = () => {
     const [loadingAPI, setLoadingAPI] = useState(true);
     const [employeeData, setEmployeeData] = useState<Employee | null>(null)
     const [groupsCompanie, setGroupsCompanie] = useState<Groups[]>([])
 
     const { user, checkPermission } = useAuth()
     const { id } = useParams();
-
+    const navigate = useNavigate();
 
     const loadDataEmployee = async () => {
         const res = await api<ApiGetOneEmployee>(`companies/employees/${id}`, 'get', {}, user.auth.jwt_access)
@@ -34,7 +34,14 @@ const EmployeesPage = () => {
     }
 
     const handleEdit = async () => {
+        const { name, email } = employeeData
+        const groups = (employeeData.groups.map((item) => item.id)).join(',')
 
+        setLoadingAPI(true)
+        await api(`companies/employees/${id}`, 'put', { name, email, groups }, user.auth.jwt_access)
+        setLoadingAPI(false)
+
+        navigate('/employees')
     }
 
     const defaultGroups = () => {
@@ -46,7 +53,7 @@ const EmployeesPage = () => {
     useEffect(() => {
         loadDataEmployee();
         loadGroupsOfCompanie()
-    }, []) 
+    }, [])
 
     return (
         <>
@@ -63,7 +70,7 @@ const EmployeesPage = () => {
                 />
             </PageTitleWrapper>
 
-            {checkPermission('change_employee') &&
+            {checkPermission('change_employee') && employeeData ?
                 <Container maxWidth="lg">
                     <Grid maxWidth={700}>
                         <TextField
@@ -115,7 +122,7 @@ const EmployeesPage = () => {
                                         placeholder="Escolher grupos"
                                     />
                                 )}
-                                onChange={(event, value) => setEmployeeData({...employeeData, groups: value })}
+                                onChange={(event, value) => setEmployeeData({ ...employeeData, groups: value })}
                             />
 
                         }
@@ -127,10 +134,10 @@ const EmployeesPage = () => {
                         >Editar</Button>
                     </Grid>
                 </Container>
-            }
+            : ''}
 
         </>
     )
 }
 
-export default EmployeesPage;
+export default EmployeeEdit;

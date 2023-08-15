@@ -5,7 +5,7 @@ import { RouteObject } from 'react-router';
 import SidebarLayout from 'src/layouts/SidebarLayout';
 import BaseLayout from 'src/layouts/BaseLayout';
 
-import SuspenseLoader from 'src/components/SuspenseLoader';  
+import SuspenseLoader from 'src/components/SuspenseLoader';
 
 const Loader = (Component) => (props) =>
 (
@@ -22,7 +22,22 @@ const Employees = Loader(
 const EmployeeEdit = Loader(
   lazy(() => import('src/content/pages/Employees/Edit'))
 );
+const EmployeeAdd = Loader(
+  lazy(() => import('src/content/pages/Employees/Add'))
+);
 
+// Groups 
+const Groups = Loader(
+  lazy(() => import('src/content/pages/Groups/Groups'))
+);
+
+const GroupAdd = Loader(
+  lazy(() => import('src/content/pages/Groups/Add'))
+)
+
+const GroupEdit = Loader(
+  lazy(() => import('src/content/pages/Groups/Edit'))
+)
 
 // Auth
 const AuthSignin = Loader(
@@ -32,45 +47,7 @@ const AuthSignin = Loader(
 // Dashboards
 
 const Tasks = Loader(lazy(() => import('src/content/dashboards/Tasks')));
-
-// Applications
-
-const Messenger = Loader(
-  lazy(() => import('src/content/applications/Messenger'))
-);
-const Transactions = Loader(
-  lazy(() => import('src/content/applications/Transactions'))
-);
-const UserProfile = Loader(
-  lazy(() => import('src/content/applications/Users/profile'))
-);
-const UserSettings = Loader(
-  lazy(() => import('src/content/applications/Users/settings'))
-);
-
-// Components
-
-const Buttons = Loader(
-  lazy(() => import('src/content/pages/Components/Buttons'))
-);
-const Modals = Loader(
-  lazy(() => import('src/content/pages/Components/Modals'))
-);
-const Accordions = Loader(
-  lazy(() => import('src/content/pages/Components/Accordions'))
-);
-const Tabs = Loader(lazy(() => import('src/content/pages/Components/Tabs')));
-const Badges = Loader(
-  lazy(() => import('src/content/pages/Components/Badges'))
-);
-const Tooltips = Loader(
-  lazy(() => import('src/content/pages/Components/Tooltips'))
-);
-const Avatars = Loader(
-  lazy(() => import('src/content/pages/Components/Avatars'))
-);
-const Cards = Loader(lazy(() => import('src/content/pages/Components/Cards')));
-const Forms = Loader(lazy(() => import('src/content/pages/Components/Forms')));
+ 
 
 // Status
 
@@ -87,7 +64,7 @@ const StatusMaintenance = Loader(
   lazy(() => import('src/content/pages/Status/Maintenance'))
 );
 
-const routes: RouteObject[] = [ 
+const routes: RouteObject[] = [
   {
     path: '*',
     element: <BaseLayout />,
@@ -124,7 +101,40 @@ const routes: RouteObject[] = [
       }
     ]
   },
-
+  {
+    path: 'employees-add',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <EmployeeAdd />
+      },
+    ]
+  },
+  {
+    path: 'groups',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <Groups />
+      },
+      {
+        path: 'edit/:id',
+        element: <GroupEdit />
+      }
+    ]
+  },
+  {
+    path: 'groups-add',
+    element: <SidebarLayout />,
+    children: [
+      {
+        path: '',
+        element: <GroupAdd />
+      }
+    ]
+  },
 
 
   {
@@ -162,103 +172,7 @@ const routes: RouteObject[] = [
       }
     ]
   },
-
-
-  {
-    path: 'dashboards',
-    element: <SidebarLayout />,
-    children: [
-      {
-        path: '',
-        element: <Navigate to="tasks" replace />
-      },
-      {
-        path: 'tasks',
-        element: <Tasks />
-      },
-      {
-        path: 'messenger',
-        element: <Messenger />
-      }
-    ]
-  },
-  {
-    path: 'management',
-    element: <SidebarLayout />,
-    children: [
-      {
-        path: '',
-        element: <Navigate to="transactions" replace />
-      },
-      {
-        path: 'transactions',
-        element: <Transactions />
-      },
-      {
-        path: 'profile',
-        children: [
-          {
-            path: '',
-            element: <Navigate to="details" replace />
-          },
-          {
-            path: 'details',
-            element: <UserProfile />
-          },
-          {
-            path: 'settings',
-            element: <UserSettings />
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: '/components',
-    element: <SidebarLayout />,
-    children: [
-      {
-        path: '',
-        element: <Navigate to="buttons" replace />
-      },
-      {
-        path: 'buttons',
-        element: <Buttons />
-      },
-      {
-        path: 'modals',
-        element: <Modals />
-      },
-      {
-        path: 'accordions',
-        element: <Accordions />
-      },
-      {
-        path: 'tabs',
-        element: <Tabs />
-      },
-      {
-        path: 'badges',
-        element: <Badges />
-      },
-      {
-        path: 'tooltips',
-        element: <Tooltips />
-      },
-      {
-        path: 'avatars',
-        element: <Avatars />
-      },
-      {
-        path: 'cards',
-        element: <Cards />
-      },
-      {
-        path: 'forms',
-        element: <Forms />
-      }
-    ]
-  }
+ 
 ];
 
 export default routes;

@@ -14,8 +14,8 @@ class AccountLogin(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
         user = Authentication.signin(self, email=email, password=password)
 
@@ -39,9 +39,9 @@ class AccountCreate(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        name = request.data.get('name')
-        email = request.data.get('email')
-        password = request.data.get('password')
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
         signup_user = Authentication.signup(
             self, name=name, email=email, password=password)

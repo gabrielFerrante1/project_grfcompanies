@@ -27,11 +27,14 @@ class Base(APIView):
 
         return employee
 
-    def get_group(self, group_id: int, enterprise_id: int) -> dict[str, str]:
-        group = Group.objects.values('name').filter(
-            id=group_id, enterprise_id=enterprise_id).first()
+    def get_group(self, group_id: int, enterprise_id: int) -> dict[str, str]: 
+        try:
+            group = Group.objects.values('name').filter(
+                id=group_id, enterprise_id=enterprise_id).first()
 
-        if not group:
+            if not group:
+                raise NotFoundGroup
+        except:
             raise NotFoundGroup
 
         return group
