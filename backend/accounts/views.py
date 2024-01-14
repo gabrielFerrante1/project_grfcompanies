@@ -7,28 +7,27 @@ from rest_framework import status
 
 from accounts.auth import Authentication
 from accounts.models import User_Groups, Group_Permissions, User
+from accounts.serializers import UserSerializer
 
 from companies.models import Employee, Enterprise
 
 class AccountLogin(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
+    def post(self, request):  
+        email = request.data.get('email')
+        password = request.data.get('password')
+      
         user = Authentication.signin(self, email=email, password=password)
-
+        
         enterprise = get_enterprise_user(user.id)
-
+       
         refresh = RefreshToken.for_user(user)
 
+        serializer = UserSerializer(user)
+
         return Response({
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email
-            },
+            "user": serializer.data,
             "enterprise": enterprise,
             "refresh": str(refresh),
             "access": str(refresh.access_token)
@@ -39,9 +38,9 @@ class AccountCreate(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        name = request.data.get('name')
+        email = request.data.get('email')
+        password = request.data.get('password')
 
         signup_user = Authentication.signup(
             self, name=name, email=email, password=password)
@@ -49,7 +48,9 @@ class AccountCreate(APIView):
         if signup_user == True:
             return Response({"success": True}, status=status.HTTP_201_CREATED)
         else:
-            return Response(signup_user, status=status.HTTP_400_BAD_REQUEST)
+            serializer = UserSerializer(signup_user)
+
+            return Response({"user": serializer.data}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AccountGetUser(APIView):

@@ -11,9 +11,7 @@ from ..utils.exceptions import RequiredFields
 from accounts.models import Group, Group_Permissions
 
 from ..serializers import GroupsSerializer
-
-import json
-
+ 
 class Groups(Base):
     permission_classes = [GroupsPermission]
 
@@ -26,12 +24,10 @@ class Groups(Base):
         return Response({"groups": serializer.data})
 
     def post(self, request): 
-        body = json.loads(request.body)
-
         enterprise_id = self.get_enterprise_id(request.user.id)
 
-        name = body.get('name')
-        permissions = body.get('permissions')
+        name = request.data.get('name')
+        permissions = request.data.get('permissions')
 
         if not name:
             raise RequiredFields 
@@ -75,24 +71,22 @@ class GroupsDetail(Base):
         return Response({"group": serializer.data})
 
 
-    def put(self, request, group_id):
-        body = json.loads(request.body)
-
+    def put(self, request, group_id): 
         enterprise_id = self.get_enterprise_id(request.user.id)
         self.get_group(group_id, enterprise_id)
 
-        name = body.get('name')
-        permissions = body.get('permissions')
+        name = request.data.get('name')
+        permissions = request.data.get('permissions')
 
         if name:
             Group.objects.filter(id=group_id).update(
                 name=name,
             )
 
-        if permissions:
-            permissions = permissions.split(",")
+        Group_Permissions.objects.filter(group_id=group_id).delete()
 
-            Group_Permissions.objects.filter(group_id=group_id).delete()
+        if permissions:
+            permissions = permissions.split(",") 
 
             try:
                 for item in permissions:

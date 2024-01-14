@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Employee
+
+from .models import Employee, Task
 
 from accounts.models import User, User_Groups, Group, Group_Permissions
 
 from django.contrib.auth.models import Permission
 
-class EmployeesSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()
+class EmployeesSerializer(serializers.ModelSerializer): 
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField() 
 
@@ -17,10 +17,7 @@ class EmployeesSerializer(serializers.ModelSerializer):
             'name',
             'email', 
         )
-    
-    def get_id(self, obj):
-        return obj.user.id
-    
+     
     def get_name(self, obj):
         return obj.user.name
 
@@ -28,8 +25,7 @@ class EmployeesSerializer(serializers.ModelSerializer):
         return obj.user.email
     
 
-class EmployeeSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()
+class EmployeeSerializer(serializers.ModelSerializer): 
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     groups = serializers.SerializerMethodField()
@@ -42,9 +38,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'email', 
             'groups'
         )
-    
-    def get_id(self, obj):
-        return obj.user.id
     
     def get_name(self, obj):
         return obj.user.name
@@ -96,3 +89,52 @@ class PermissionsSerializer(serializers.ModelSerializer):
             'name',
             'codename'
         )
+
+class TasksSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    class Meta:
+        model = Task
+        fields = (
+            'id',
+            'title',
+            'description',
+            'due_date',
+            'created_at',
+            'status'
+        )
+
+    def get_status(self, obj):
+        return obj.status.name
+    
+class TaskSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    employee = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = (
+            'id',
+            'title',
+            'description',
+            'due_date',
+            'created_at',
+            'status',
+            'employee'
+        )
+
+    def get_status(self, obj):
+        return obj.status.name
+    
+    def get_employee(self, obj):
+        return EmployeesSerializer(obj.employee).data
+    
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.status_id =  validated_data.get('status_id', instance.status_id)
+        instance.employee_id = validated_data.get('employee_id', instance.employee_id)
+        instance.due_date = validated_data.get('due_date', instance.due_date)
+
+        instance.save()
+
+        return instance

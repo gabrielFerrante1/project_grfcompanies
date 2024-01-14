@@ -4,8 +4,6 @@ from .base import Base
 from rest_framework.views import Response, status
 from rest_framework.exceptions import APIException
 
-from django.http import QueryDict
-
 from ..utils.permissions import EmployeesPermission, GroupsPermission
 
 from ..models import Employee, Enterprise
@@ -14,9 +12,7 @@ from accounts.auth import Authentication
 from accounts.models import User, User_Groups
 
 from ..serializers import EmployeesSerializer, EmployeeSerializer
-
-import json
-
+ 
 class Employees(Base):
     permission_classes = [EmployeesPermission]
 
@@ -34,12 +30,10 @@ class Employees(Base):
 
         return Response({"employees": serializer.data})
 
-    def post(self, request):
-        body = json.loads(request.body)
-
-        name = body.get('name')
-        email = body.get('email')
-        password = body.get('password') 
+    def post(self, request): 
+        name = request.data.get('name')
+        email = request.data.get('email')
+        password = request.data.get('password') 
       
         enterprise_id = self.get_enterprise_id(request.user.id)
         signup_user = Authentication.signup(
@@ -67,15 +61,13 @@ class EmployeeDetail(Base):
 
         return Response(serializer.data)
     
-    def put(self, request, employee_id):   
-        body = json.loads(request.body)
-
-        groups =  body.get('groups')
+    def put(self, request, employee_id):
+        groups =  request.data.get('groups')
 
         employee  = self.get_employee(employee_id, request.user.id) 
 
-        name =  body.get('name') or employee.user.name
-        email = body.get('email') or employee.user.email
+        name =  request.data.get('name') or employee.user.name
+        email = request.data.get('email') or employee.user.email
      
         if email != employee.user.email and User.objects.filter(email=email).exists():
             raise APIException("Esse email já está em uso", code="email_already_use")
@@ -85,36 +77,31 @@ class EmployeeDetail(Base):
             email=email
         )
 
+        User_Groups.objects.filter(user_id=employee.user.id).delete()
+
         if groups:
-            groups = groups.split(',')
-          
-            User_Groups.objects.filter(user_id=employee_id).delete()
+            groups = groups.split(',') 
 
             for group_id in groups:
                 self.get_group(group_id, employee.enterprise.id)
                 User_Groups.objects.create(
                     group_id=group_id,
-                    user_id=employee_id
+                    user_id=employee.user.id
                 )
 
-        return Response({"copo": True})
+        return Response({"success": True})
 
     def delete(self, request, employee_id):
-        # Check employee_id
-        self.get_employee(employee_id, request.user.id)
-
+        employee = self.get_employee(employee_id, request.user.id)
+ 
         check_if_owner = User.objects.filter(
-            id=employee_id, is_owner=1).exists()
+            id=employee.user.id, is_owner=1).exists()
         if check_if_owner:
             raise APIException('Você não pode demitir o dono da empresa')
 
-        enterprise_id = self.get_enterprise_id(employee_id)
-
-        employee = Employee.objects.filter(
-            user_id=employee_id, enterprise_id=enterprise_id).first()
         employee.delete()
 
-        User.objects.filter(id=employee_id).delete()
+        User.objects.filter(id=employee.user.id).delete()
 
         return Response({'success': True})
 
@@ -122,7 +109,7 @@ class EmployeeDetail(Base):
 class EmployeeGroupsDetail(Base):
     permission_classes = [GroupsPermission]
 
-    def post(self, request, employee_id, group_id):
+    """def post(self, request, employee_id, group_id):
         # Check employee_id
         self.get_employee(employee_id, request.user.id)
 
@@ -149,4 +136,4 @@ class EmployeeGroupsDetail(Base):
         if user_group:
             user_group.delete()
 
-        return Response({"success": True})
+        return Response({"success": True})"""

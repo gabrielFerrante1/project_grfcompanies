@@ -43,3 +43,9 @@ class GroupsPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return check_permissions(request.user, request.method, permission_to='permission')
+    
+class TasksPermission(permissions.BasePermission):
+    message = 'O funcionário não tem permissão para gerenciar as tarefas de todos os funcionários' 
+
+    def has_permission(self, request, view):
+        return check_permissions(request.user, request.method, permission_to='task') 

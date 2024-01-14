@@ -1,4 +1,6 @@
 from accounts.models import User
+from accounts.serializers import UserSerializer
+
 from rest_framework import exceptions 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password 
@@ -13,7 +15,8 @@ class Authentication():
             raise exception_auth
 
         user = User.objects.get(email=email)
-        user_password = user.password
+        user_password = user.password 
+        
         if check_password(password, user_password):
             return user
         else:
@@ -59,6 +62,6 @@ class Authentication():
             Employee.objects.create(
                 enterprise_id=company_id or created_enterprise.id,
                 user_id=created_user.id
-            ) 
+            )
 
         return created_user

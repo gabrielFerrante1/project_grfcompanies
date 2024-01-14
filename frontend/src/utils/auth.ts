@@ -20,7 +20,7 @@ export const useAuth = () => {
     const checkAuthentication = async () => {
         const accessToken = localStorage.getItem(localStorageItem);
 
-        const response = await api<ApiGetAuthentication>('auth/user/', 'get', {}, accessToken);
+        const response = await api<ApiGetAuthentication>('auth/user', 'get', {}, accessToken);
 
         if (response.errorCode) return 'not_authenticated'
 
@@ -41,7 +41,7 @@ export const useAuth = () => {
     }
 
     const signIn = async (email: string, password: string) => {
-        const response = await api<ApiSigin>('auth/login/', 'post', { email, password });
+        const response = await api<ApiSigin>('auth/login', 'post', { email, password });
 
         if (!response.errorCode) {
             dispatch(setUser({

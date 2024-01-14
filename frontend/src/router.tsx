@@ -46,8 +46,8 @@ const AuthSignin = Loader(
 
 // Dashboards
 
-const Tasks = Loader(lazy(() => import('src/content/dashboards/Tasks')));
- 
+const TasksDashboard = Loader(lazy(() => import('src/content/dashboards/Tasks')));
+
 
 // Status
 
@@ -142,10 +142,6 @@ const routes: RouteObject[] = [
     element: <SidebarLayout />,
     children: [
       {
-        path: '/',
-        element: <Tasks />
-      },
-      {
         path: 'overview',
         element: <Navigate to="/" replace />
       },
@@ -172,7 +168,7 @@ const routes: RouteObject[] = [
       }
     ]
   },
- 
+
 ];
 
 export default routes;
